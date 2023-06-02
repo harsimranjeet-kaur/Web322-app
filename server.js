@@ -16,6 +16,9 @@ var app = express();
 
 var HTTP_PORT = process.env.PORT || 8080;
 // call this function after the http server starts listening for requests
+
+app.use(express.static('public'));
+
 function onHTTPSTART() {
     console.log("Express http server listening on: " + HTTP_PORT);
   }
@@ -38,7 +41,7 @@ app.get("/", function(req,res){
     res.status(404).send("Page does not exist, coming soon!!!");
  });
 
- 
+
   //app.listen(HTTP_PORT, onHTTPSTART);
 data.initialize().then(function(){
    app.listen(HTTP_PORT, onHTTPSTART);
