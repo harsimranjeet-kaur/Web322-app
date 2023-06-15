@@ -3,7 +3,7 @@
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  No part *  of this assignment has been copied manually or electronically from any other source 
 *  (including 3rd party web sites) or distributed to other students.
 * 
-*  Name: ______________________ Student ID: ______________ Date: ________________
+*  Name: _Harsimranjeet kaur_____________________ Student ID: _174393215_____________ Date: _____1 june 2023___________
 *
 *  Online (Cyclic) Link: ________________________________________________________
 *
@@ -34,15 +34,19 @@ app.get("/", function(req,res){
   app.get("/items",(req,res)=>{
     store.getAllItems().then((data)=>{
       res.json(data);
-    })
+    });
+
+  app.get('/items/add', (req, res) => {
+   res.sendFile(path.join(__dirname, 'views', 'addItem.html'));
+      });
+
   })
   
   app.use((req, res)=>{
     res.status(404).send("Page does not exist, coming soon!!!");
  });
 
-
-  //app.listen(HTTP_PORT, onHTTPSTART);
+ //app.listen(HTTP_PORT, onHTTPSTART);
 data.initialize().then(function(){
    app.listen(HTTP_PORT, onHTTPSTART);
 }).catch(function(err){
