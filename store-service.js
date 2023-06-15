@@ -42,13 +42,30 @@ module.exports.getPublishedItems = function(){
         }
     })
 }
-function getItemsByCategory(category) {
+function addItem(itemData) {
+    return new Promise((resolve, reject) => {
+      if (!itemData.published) {
+        itemData.published = false;
+      } else {
+        itemData.published = true;
+      }
+  
+      itemData.id = items.length + 1;
+  
+      items.push(itemData);
+  
+      resolve(itemData);
+    });
+  }
+  
+  function getItemsByCategory(category) {
     return new Promise((resolve, reject) => {
       const filteredItems = items.filter((item) => item.category === category);
-      if (filteredItems.length > 0) {
-        resolve(filteredItems);
+  
+      if (filteredItems.length === 0) {
+        reject('No results returned');
       } else {
-        reject('No results returned.');
+        resolve(filteredItems);
       }
     });
   }
