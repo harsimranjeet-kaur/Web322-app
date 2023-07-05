@@ -23,5 +23,9 @@
     "url": "https://github.com/harsimranjeet-kaur/Web322-app/issues"
   },
   "homepage": "https://github.com/harsimranjeet-kaur/Web322-app#readme",
-  "description": ""
+  "description": "c",
+  "devDependencies": {},
+  "keywords": [
+    "^C"
+  ]
 }

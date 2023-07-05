@@ -3,7 +3,7 @@ let items = [];
 let categories = [];
 
 module.exports.intialize = function(){
-    return new Promise((resolve,reject))=>{
+    return new Promise((resolve,reject)=>{
         fs.readFile('./data/items.json',(err, itemsData)=>{
             if (err){
                 reject(err);
