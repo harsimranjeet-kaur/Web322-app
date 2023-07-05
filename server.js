@@ -5,7 +5,7 @@
 * 
 *  Name: _Harsimranjeet kaur_____________________ Student ID: _174393215_____________ Date: _____15 june 2023___________
 *
-*  Online (Cyclic) Link: ________________________________________________________
+*  Online (Cyclic) Link: ______https://crowded-rose-beaver.cyclic.app__________________________________________________
 *
 ********************************************************************************/ 
 
@@ -17,6 +17,8 @@ const multer=require("multer");
 const cloudinary=require('cloudinary').v2
 const streamifier=require('streamifier')
 const upload = multer();
+const exphbs = require('express-handlebars');
+
 
 var HTTP_PORT = process.env.PORT || 8080;
 // call this function after the http server starts listening for requests
@@ -145,6 +147,11 @@ cloudinary.config({
   api_secret:'kj5kc8mmN1zJ5H026LGmGPTQx5I'
   secure: true
 });
+// Configure Express-Handlebars
+app.engine('hbs', exphbs({
+  extname: '.hbs'
+}));
+app.set('view engine', 'hbs');
 
 
   
