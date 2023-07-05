@@ -1,5 +1,5 @@
 {
-  "name": "0",
+  "name": "web322-app",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -24,7 +24,6 @@
   },
   "homepage": "https://github.com/harsimranjeet-kaur/Web322-app#readme",
   "description": "c",
-  "devDependencies": {},
   "keywords": [
     "^C"
   ]
