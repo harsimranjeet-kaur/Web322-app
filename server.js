@@ -40,7 +40,7 @@ app.get("/", function(req,res){
   });
 
   app.get("/items/add", function(req,res){
-    res.render(path.join(__dirname,"/views/addItem.html"));
+    res.sendFile(path.join(__dirname,"/views/addItem.html"));
     })
 
  // app.listen(HTTP_PORT, onHTTPSTART);
