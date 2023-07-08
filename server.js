@@ -6,7 +6,7 @@ const multer = require('multer');
 const upload = multer();
 const streamifier = require('streamifier');
 const exphbs = require('express-handlebars');
-
+const helpers = require('./helpers');
 
 var app = express();
 
@@ -16,102 +16,38 @@ app.use(express.static('public'));
 function onHTTPSTART() {
     console.log("Express http server listening on: " + HTTP_PORT);
   }
-const app = express();
 
 app.engine('hbs', exphbs.engine({ extname: '.hbs' }));
 app.set('view engine', 'hbs');
-const app = express();
-const HTTP_PORT = process.env.PORT || 8080;
-
-// Configure handlebars as the view engine
-app.engine(
-  "hbs",
-  exphbs({
-    defaultLayout: "main",
-    extname: ".hbs",
-  })
-);
-app.set("view engine", "hbs");
-
-
-// Serve static files from the public folder
-app.use(express.static('public'));
-
-// Define routes
-app.get("/", (req, res) => {
-    res.render('about');
+    
+app.use(function(req,res,next){
+  let route = req.path.substring(1);
+  app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
+  app.locals.viewingCategory = req.query.category;
+  next();
 });
 
-app.get("/about", (req, res) => {
-    res.render('about');
-});
+  app.get("/about", function(req,res){
+    res.render("about");
+  });
+  
+  
+  app.get('/items', function(req, res) {
+    // Assuming you have a "getItems" function that returns a promise
+    getItems()
+      .then(function(data) {
+        res.render('items', { items: data });
+      })
+      .catch(function(error) {
+        res.render('items', { message: 'no results' });
+      });
+  });
 
-app.get("/items", (req, res) => {
-    store.getAllItems().then((data) => {
-        res.json(data);
-    });
-});
+ 
 
-app.use((req, res) => {
-    res.status(404).send("Page does not exist, coming soon!!!");
-});
-
-app.get("/items/add", (req, res) => {
-    res.render('addPost');
-});
-
-app.post('/items/add', upload.single('featureImage'), (req, res) => {
-    // Handle file upload and processing
-});
-
-// Start the server
-app.listen(HTTP_PORT, () => {
-    console.log("Express http server listening on: " + HTTP_PORT);
-});
-
-    app.get("/shop", async (req, res) => {
-      // Declare an object to store properties for the view
-      let viewData = {};
-    
-      try {
-        // declare empty array to hold "post" objects
-        let items = [];
-    
-        // if there's a "category" query, filter the returned posts by category
-        if (req.query.category) {
-          // Obtain the published "posts" by category
-          items = await itemData.getPublishedItemsByCategory(req.query.category);
-        } else {
-          // Obtain the published "items"
-          items = await itemData.getPublishedItems();
-        }
-    
-        // sort the published items by postDate
-        items.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
-    
-        // get the latest post from the front of the list (element 0)
-        let post = items[0];
-    
-        // store the "items" and "post" data in the viewData object (to be passed to the view)
-        viewData.items = items;
-        viewData.item = item;
-      } catch (err) {
-        viewData.message = "no results";
-      }
-    
-      try {
-        // Obtain the full list of "categories"
-        let categories = await itemData.getCategories();
-    
-        // store the "categories" data in the viewData object (to be passed to the view)
-        viewData.categories = categories;
-      } catch (err) {
-        viewData.categoriesMessage = "no results";
-      }
-    
-      // render the "shop" view with all of the data (viewData)
-      res.render("shop", { data: viewData });
-    });
+  app.get("/items/add", function(req,res){
+    res.render("addItem");
+  })  
 
  // app.listen(HTTP_PORT, onHTTPSTART);
  data.initialize().then(function(){
@@ -171,36 +107,62 @@ app.listen(HTTP_PORT, () => {
       resolve(itemData);
     });
   }
-  
-app.get('/items', (req, res) => {
-  const category = req.query.category;
-  const minDate = req.query.minDate;
-
-  if (category) {
-    // Filter items by category
-    const itemsByCategory = getItemsByCategory(category);
-    res.json(itemsByCategory);
-  } else if (minDate) {
-    // Filter items by minimum date
-    const itemsByMinDate = getItemsByMinDate(minDate);
-    res.json(itemsByMinDate);
-  } else {
-    // Return all items without any filter
-    res.json(getAllItems());
-  }
+})
+app.get("/categories", (req, res) => {
+  store.getAllCategories()
+      .then((data) => {
+          res.render("categories", { categories: data });
+      })
+      .catch((err) => {
+          res.render("categories", { message: "no results" });
+      });
 });
-app.get('/item/:id', (req, res) => {
-  const itemId = req.params.id;
-  const item = getItemById(itemId);
 
-  if (item) {
-    res.json(item);
-  } else {
-    res.status(404).json({ error: 'Item not found' });
+app.get("/shop", async (req, res) => {
+  // Declare an object to store properties for the view
+  let viewData = {};
+
+  try {
+    // declare empty array to hold "post" objects
+    let items = [];
+
+    // if there's a "category" query, filter the returned posts by category
+    if (req.query.category) {
+      // Obtain the published "posts" by category
+      items = await itemData.getPublishedItemsByCategory(req.query.category);
+    } else {
+      // Obtain the published "items"
+      items = await itemData.getPublishedItems();
+    }
+
+    // sort the published items by postDate
+    items.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
+
+    // get the latest post from the front of the list (element 0)
+    let post = items[0];
+
+    // store the "items" and "post" data in the viewData object (to be passed to the view)
+    viewData.items = items;
+    viewData.item = item;
+  } catch (err) {
+    viewData.message = "no results";
   }
+
+  try {
+    // Obtain the full list of "categories"
+    let categories = await itemData.getCategories();
+
+    // store the "categories" data in the viewData object (to be passed to the view)
+    viewData.categories = categories;
+  } catch (err) {
+    viewData.categoriesMessage = "no results";
+  }
+
+  // render the "shop" view with all of the data (viewData)
+  res.render("shop", { data: viewData });
 });
- })
- app.get('/shop/:id', async (req, res) => {
+
+app.get('/shop/:id', async (req, res) => {
 
   // Declare an object to store properties for the view
   let viewData = {};
@@ -249,41 +211,6 @@ app.get('/item/:id', (req, res) => {
   // render the "shop" view with all of the data (viewData)
   res.render("shop", {data: viewData})
 });
- app.use(function(req, res, next) {
-  let route = req.path.substring(1);
-  app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
-  app.locals.viewingCategory = req.query.category;
-  next();
-});
-const exphbs = require('express-handlebars');
-const exhbs = exphbs.create({});
-
-app.use(function(req, res, next) {
-  let route = req.path.substring(1);
-  app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.)/, "") : route.replace(/\/(.)/, ""));
-  app.locals.viewingCategory = req.query.category;
-  next();
-});
-const exphbs = require('express-handlebars');
-const hbs = exphbs.create({});
-
-hbs.handlebars.registerHelper('navLink', function(url, options) {
-    const activeRoute = options.data.root.activeRoute;
-    const isActive = (activeRoute === url) ? 'active' : '';
-    return new hbs.handlebars.SafeString(`<li class="nav-item ${isActive}"><a class="nav-link" href="${url}">${options.fn(this)}</a></li>`);
-});
-hbs.handlebars.registerHelper('equals', function(lvalue, rvalue, options) {
-  if (arguments.length < 3)
-      throw new Error("Handlebars Helper equal needs 2 parameters");
-  if (lvalue != rvalue) {
-      return options.inverse(this);
-  } else {
-      return options.fn(this);
-  }
-});
-app.engine('hbs', hbs.engine);
-app.set('view engine', 'hbs');
-
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+app.get("/", (req, res) => {
+  res.redirect("/shop");
 });
