@@ -1,44 +1,32 @@
+<h2>Items</h2>
 <div class="row">
     <div class="col-md-12">
-          <div class="col-md-12">
-  <div class="table-responsive">
-    <table class="table">
-      <thead>
+       <div class="table-responsive">
+      <table class="table">
+     <thead>
+            <tr>
+                        
+         <th>Item ID</th>
+                        <th>Title</th>
+                        <th>Post Date</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th>Published</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each items}}
         <tr>
-          <th>Category ID</th>
-          <th>Category Name</th>
+          <td>{{id}}</td>
+          <td>{{title}}</td>
+          <td>{{postDate}}</td>
+          <td><a href="/items?category={{category}}">{{category}}</a></td>
+          <td>{{published}}</td>
+          <td><a href="items/delete/{{id}}" class="btn btn-danger">Remove</a></td>
         </tr>
-      </thead>
-      <tbody>
-        {{#each categories}}
-          <tr>
-            <td><a href="/items?category={{id}}">{{id}}</a></td>
-            <td><a href="/items?category={{id}}">{{category}}</a></td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </div>
+      {{/each}}
+    </tbody>
+  </table>
+  <a href="/Items/add" class="btn btn-success pull-right">Add Item</a>
 </div>
 
-          <div class="row">
-  <div class="col-md-12">
-    <h2>Categories</h2>
-    <hr />
-    {{#if categories.length}}
-      <ul>
-        {{#each categories}}
-          <li>Category ID: {{id}}, Category: {{category}}</li>
-        {{/each}}
-      </ul>
-    {{else}}
-      <p>No results</p>
-    {{/if}}
-  </div>
-</div>
-
-    </div>
-</div>
-<div class="col-md-12 text-center">
-  <strong>{{#unless categories.length}}{{message}}{{/unless}}</strong>
-</div>
