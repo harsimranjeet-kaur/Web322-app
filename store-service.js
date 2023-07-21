@@ -1,216 +1,179 @@
-var express = require("express");
-const path = require ("path");
-const data = require("./store-service");
-const cloudinary = require('./config');
-const multer = require('multer');
-const upload = multer();
-const streamifier = require('streamifier');
-const exphbs = require('express-handlebars');
-const helpers = require('./helpers');
-
-var app = express();
-
-var HTTP_PORT = process.env.PORT || 8080;
-// call this function after the http server starts listening for requests
-app.use(express.static('public'));
-function onHTTPSTART() {
-    console.log("Express http server listening on: " + HTTP_PORT);
-  }
-
-app.engine('hbs', exphbs.engine({ extname: '.hbs' }));
-app.set('view engine', 'hbs');
-    
-app.use(function(req,res,next){
-  let route = req.path.substring(1);
-  app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
-  app.locals.viewingCategory = req.query.category;
-  next();
+const Sequelize = require('sequelize');
+const sequelize = new Sequelize('huookmow', 'huookmow', 'RPLz_RqFuuFkQsW1WvOL3yp1Xclmk8vn', {
+    host: 'mahmud.db.elephantsql.com',
+    dialect: 'postgres',
+    port: 5432,
+    dialectOptions: {
+        ssl: { rejectUnauthorized: false }
+    },
+    query: { raw: true }
 });
 
-  app.get("/about", function(req,res){
-    res.render("about");
+const Item = sequelize.define('Item', {
+  body: Sequelize.TEXT,
+  title: Sequelize.STRING,
+  postDate: Sequelize.DATE,
+  featureImage: Sequelize.STRING,
+  published: Sequelize.BOOLEAN,
+  price: Sequelize.DOUBLE
+});
+
+const Category = sequelize.define('Category', {
+  category: Sequelize.STRING
+});
+Item.belongsTo(Category, { foreignKey: 'category' });
+
+
+
+module.exports.initialize = function() {
+  return new Promise((resolve, reject) => {
+    reject();
   });
-  
-  
-  app.get('/items', function(req, res) {
-    // Assuming you have a "getItems" function that returns a promise
-    getItems()
-      .then(function(data) {
-        res.render('items', { items: data });
-      })
-      .catch(function(error) {
-        res.render('items', { message: 'no results' });
-      });
+};
+
+module.exports.getAllItems = function() {
+  return new Promise((resolve, reject) => {
+    reject();
   });
+};
 
- 
-
-  app.get("/items/add", function(req,res){
-    res.render("addItem");
-  })  
-
- // app.listen(HTTP_PORT, onHTTPSTART);
- data.initialize().then(function(){
-  app.listen(HTTP_PORT, onHTTPSTART);
- }).catch(function(err){
-  console.log("Unable to start server:"   + err);
- })
- app.post('/items/add', upload.single('featureImage'), (req, res) => {
-  if (req.file) {
-    let streamUpload = (req) => {
-      return new Promise((resolve, reject) => {
-        let stream = cloudinary.uploader.upload_stream((error, result) => {
-          if (result) {
-            resolve(result);
-          } else {
-            reject(error);
-          }
-        });
-
-        streamifier.createReadStream(req.file.buffer).pipe(stream);
-      });
-    };
-
-    async function upload(req) {
-      try {
-        let result = await streamUpload(req);
-        console.log(result);
-        return result;
-      } catch (error) {
-        console.error(error);
-        return null;
+module.exports.getItemsByCategory = function(category) {
+  return new Promise((resolve, reject) => {
+    reject();
+  });
+};
+module.exports.getItemsByMinDate = function(minDateStr) {
+  const { Op } = Sequelize;
+  return Item.findAll({
+    where: {
+      postDate: {
+        [Op.gte]: new Date(minDateStr)
       }
     }
-
-    upload(req)
-      .then((uploaded) => {
-        processItem(uploaded.url);
-      })
-      .catch((error) => {
-        console.error(error);
-        processItem("");
-      });
-  } else {
-    processItem("");
-  }
-  function addItem(itemData) {
-    return new Promise((resolve, reject) => {
-      if (itemData.published === undefined) {
-        itemData.published = false;
-      } else {
-        itemData.published = true;
-      }
-  
-      itemData.id = items.length + 1;
-      items.push(itemData);
-  
-      resolve(itemData);
+  })
+    .then((items) => {
+      return Promise.resolve(items);
+    })
+    .catch(() => {
+      return Promise.reject('No results returned');
     });
-  }
-})
-app.get("/categories", (req, res) => {
-  store.getAllCategories()
-      .then((data) => {
-          res.render("categories", { categories: data });
-      })
-      .catch((err) => {
-          res.render("categories", { message: "no results" });
-      });
-});
+};
 
-app.get("/shop", async (req, res) => {
-  // Declare an object to store properties for the view
-  let viewData = {};
-
-  try {
-    // declare empty array to hold "post" objects
-    let items = [];
-
-    // if there's a "category" query, filter the returned posts by category
-    if (req.query.category) {
-      // Obtain the published "posts" by category
-      items = await itemData.getPublishedItemsByCategory(req.query.category);
-    } else {
-      // Obtain the published "items"
-      items = await itemData.getPublishedItems();
-    }
-
-    // sort the published items by postDate
-    items.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
-
-    // get the latest post from the front of the list (element 0)
-    let post = items[0];
-
-    // store the "items" and "post" data in the viewData object (to be passed to the view)
-    viewData.items = items;
-    viewData.item = item;
-  } catch (err) {
-    viewData.message = "no results";
-  }
-
-  try {
-    // Obtain the full list of "categories"
-    let categories = await itemData.getCategories();
-
-    // store the "categories" data in the viewData object (to be passed to the view)
-    viewData.categories = categories;
-  } catch (err) {
-    viewData.categoriesMessage = "no results";
-  }
-
-  // render the "shop" view with all of the data (viewData)
-  res.render("shop", { data: viewData });
-});
-
-app.get('/shop/:id', async (req, res) => {
-
-  // Declare an object to store properties for the view
-  let viewData = {};
-
-  try{
-
-      // declare empty array to hold "item" objects
-      let items = [];
-
-      // if there's a "category" query, filter the returned posts by category
-      if(req.query.category){
-          // Obtain the published "posts" by category
-          items = await itemData.getPublishedItemsByCategory(req.query.category);
-      }else{
-          // Obtain the published "posts"
-          items = await itemData.getPublishedItems();
+module.exports.getItemById = function(id) {
+  return Item.findAll({ where: { id: id } })
+    .then((items) => {
+      if (items.length > 0) {
+        return Promise.resolve(items[0]);
+      } else {
+        return Promise.reject('No results returned');
       }
+    })
+    .catch(() => {
+      return Promise.reject('No results returned');
+    });
+};
 
-      // sort the published items by postDate
-      items.sort((a,b) => new Date(b.postDate) - new Date(a.postDate));
+module.exports.addItem = function(itemData) {
+  itemData.published = itemData.published ? true : false;
 
-      // store the "items" and "item" data in the viewData object (to be passed to the view)
-      viewData.items = items;
-
-  }catch(err){
-      viewData.message = "no results";
+  for (let prop in itemData) {
+    if (itemData[prop] === '') {
+      itemData[prop] = null;
+    }
   }
 
-  try{
-      // Obtain the item by "id"
-      viewData.item = await itemData.getItemById(req.params.id);
-  }catch(err){
-      viewData.message = "no results"; 
+  itemData.postDate = new Date();
+
+  return Item.create(itemData)
+    .then(() => {
+      return Promise.resolve();
+    })
+    .catch(() => {
+      return Promise.reject('Unable to create post');
+    });
+};
+
+
+module.exports.getPublishedItems = function() {
+  return Item.findAll({ where: { published: true } })
+    .then((items) => {
+      return Promise.resolve(items);
+    })
+    .catch(() => {
+      return Promise.reject('No results returned');
+    });
+};
+
+
+module.exports.getPublishedItemsByCategory = function(category) {
+  return Item.findAll({ where: { published: true, category: category } })
+    .then((items) => {
+      return Promise.resolve(items);
+    })
+    .catch(() => {
+      return Promise.reject('No results returned');
+    });
+};
+
+module.exports.getCategories = function() {
+  return Category.findAll()
+    .then((categories) => {
+      return Promise.resolve(categories);
+    })
+    .catch(() => {
+      return Promise.reject('No results returned');
+    });
+};
+module.exports.addCategory = function(categoryData) {
+  for (let prop in categoryData) {
+    if (categoryData[prop] === '') {
+      categoryData[prop] = null;
+    }
   }
 
-  try{
-      // Obtain the full list of "categories"
-      let categories = await itemData.getCategories();
+  return Category.create(categoryData)
+    .then(() => {
+      return Promise.resolve();
+    })
+    .catch(() => {
+      return Promise.reject('Unable to create category');
+    });
+};
+module.exports.deleteCategoryById = function(id) {
+  return Category.destroy({ where: { id: id } })
+    .then((rowsDeleted) => {
+      if (rowsDeleted > 0) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject('Category not found');
+      }
+    })
+    .catch(() => {
+      return Promise.reject('Unable to delete category');
+    });
+};
+module.exports.deletePostById = function(id) {
+  return Post.destroy({ where: { id: id } })
+    .then((rowsDeleted) => {
+      if (rowsDeleted > 0) {
+        return Promise.resolve();
+      } else {
+        return Promise.reject('Post not found');
+      }
+    })
+    .catch(() => {
+      return Promise.reject('Unable to delete post');
+    });
+};
+function deletePostById(id) {
+  return Post.destroy({
+    where: {
+      id: id
+    }
+  });
+}
 
-      // store the "categories" data in the viewData object (to be passed to the view)
-      viewData.categories = categories;
-  }catch(err){
-      viewData.categoriesMessage = "no results"
-  }
-
-  // render the "shop" view with all of the data (viewData)
-  res.render("shop", {data: viewData})
-});
-app.get("/", (req, res) => {
-  res.redirect("/shop");
-});
+module.exports = {
+  
+  deletePostById
+};
