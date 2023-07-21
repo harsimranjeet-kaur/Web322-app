@@ -4,7 +4,11 @@
     {{#navLink "/About"}}About{{/navLink}}
     {{#navLink "/Items"}}Items{{/navLink}}
     {{#navLink "/Categories"}}Categories{{/navLink}}
-    {{#navLink "/items/add"}}Add Items{{/navLink}}  
+     {{#navLink "Items/add" "Add Items"}}
+        <li class="nav-item">
+            <a class="nav-link" href="{{url}}">{{text}}</a>
+        </li>
+    {{/navLink}}  
     </ul>
 </div>
         
@@ -12,4 +16,11 @@
      {{{body}}}
         </div>
 
-        
+        <ul class="navbar-nav">
+    
+    {{#navLink "Items/add" "Add Post"}}
+        <li class="nav-item">
+            <a class="nav-link" href="{{url}}">{{text}}</a>
+        </li>
+    {{/navLink}}
+</ul>
